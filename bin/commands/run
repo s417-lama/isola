@@ -15,7 +15,7 @@ NOCOPY_FLAG=false
 
 while getopts :b:nh OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola $OPTARG) ;;
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(get_isola_dir_from_str $OPTARG) ;;
     n) NOCOPY_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;

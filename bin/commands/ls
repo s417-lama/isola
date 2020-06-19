@@ -10,8 +10,11 @@ help_and_exit() {
   exit 1
 }
 
-while getopts :b:nh OPT; do
+RECURSIVE_FLAG=false
+
+while getopts :rh OPT; do
   case $OPT in
+    r) RECURSIVE_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
@@ -19,34 +22,12 @@ while getopts :b:nh OPT; do
 done
 shift $((OPTIND - 1))
 
-show_list() {
-  if [[ "$#" == 0 ]]; then
-    find ${ISOLA_ROOT}/projects -mindepth 1 -maxdepth 1 -type d -printf '%f\n'
-  else
-    local isola_str=$1
-    local tokens=(${isola_str//:/ })
-    if [[ "${#tokens[@]}" == 1 ]]; then
-      # project
-      local project=${tokens[0]}
-      validate_project $project
-      find ${ISOLA_ROOT}/projects/${project} -mindepth 1 -maxdepth 1 -type d -printf '%f\n'
-    elif [[ "${#tokens[@]}" == 2 ]]; then
-      # project:name
-      local project=${tokens[0]}
-      local name=${tokens[1]}
-      validate_name $project $name
-      find ${ISOLA_ROOT}/projects/${project}/${name} -mindepth 1 -maxdepth 1 -printf '%f\n'
-    elif [[ "${#tokens[@]}" == 3 ]]; then
-      # project:name:version
-      local project=${tokens[0]}
-      local name=${tokens[1]}
-      local version=${tokens[2]}
-      validate_version $project $name $version
-      find ${ISOLA_ROOT}/projects/${project}/${name}/${version} -mindepth 0 -maxdepth 0 -printf '%f\n'
-    else
-      parse_error_and_exit $isola_str
-    fi
-  fi
-}
+if [[ "$#" > 1 ]]; then
+  help_and_exit
+fi
 
-show_list "$@"
+if "$RECURSIVE_FLAG"; then
+  get_rec_isola_list "$@"
+else
+  get_isola_list "$@"
+fi

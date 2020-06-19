@@ -14,7 +14,7 @@ BASE_FLAG=false
 
 while getopts :b:h OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola $OPTARG) ;;
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(get_isola_dir_from_str $OPTARG) ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
