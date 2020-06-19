@@ -6,7 +6,16 @@ export LANG=C
 export ISOLA_ROOT=$(cd $(dirname $0)/.. 2> /dev/null && pwd -P)
 
 help_and_exit() {
-  echo "Usage: isola [OPTIONS] COMMAND" >&2
+  echo "Usage: isola [OPTIONS] COMMAND
+
+COMMANDs:
+  create    create an isola
+  run       run commands in a temporal isola
+  ls        list isolas
+  rm        remove isolas
+
+OPTIONS:
+  -h        show help" >&2
   exit 1
 }
 

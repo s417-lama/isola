@@ -6,7 +6,11 @@ export LANG=C
 . ${ISOLA_ROOT}/bin/commands/common.bash
 
 help_and_exit() {
-  echo "Usage: isola create [OPTIONS] NAME COMMANDS" >&2
+  echo "Usage: isola create [OPTIONS] NAME COMMANDS
+
+OPTIONS:
+  -b base_isola   speficy a base isola as 'project:name[:version]' format
+  -h              show help" >&2
   exit 1
 }
 

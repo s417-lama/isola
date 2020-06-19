@@ -6,7 +6,12 @@ export LANG=C
 . ${ISOLA_ROOT}/bin/commands/common.bash
 
 help_and_exit() {
-  echo "Usage: isola run [OPTIONS] COMMANDS" >&2
+  echo "Usage: isola run [OPTIONS] COMMANDS
+
+OPTIONS:
+  -b base_isola   speficy a base isola as 'project:name[:version]' format
+  -n              do not copy the current project to the isola
+  -h              show help" >&2
   exit 1
 }
 
