@@ -1,0 +1,59 @@
+#!/bin/bash
+set -euo pipefail
+export LC_ALL=C
+export LANG=C
+
+. ${ISOLA_ROOT}/bin/commands/common.bash
+
+help_and_exit() {
+  echo "Usage: isola create [OPTIONS] NAME COMMANDS" >&2
+  exit 1
+}
+
+BASE_FLAG=false
+
+while getopts :b:h OPT; do
+  case $OPT in
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola $OPTARG) ;;
+    h) help_and_exit ;;
+    :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
+    *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ "$#" == 0 ]]; then
+  echo -e "Error: NAME is not specified.\n" >&2; help_and_exit
+elif [[ "$#" == 1 ]]; then
+  echo -e "Error: COMMANDS is not specified.\n" >&2; help_and_exit
+fi
+
+ISOLA_NAME=$1
+ISOLA_COMMANDS=${@:2}
+
+DATETIME=${DATETIME:-$(date +%Y-%m-%d_%H-%M-%S)}
+VERSION=$DATETIME
+
+GIT_ROOT=$(git rev-parse --show-toplevel)
+PROJECT_NAME=$(basename $GIT_ROOT)
+
+ISOLA_HOME=${ISOLA_ROOT}/projects/${PROJECT_NAME}/${ISOLA_NAME}/${VERSION}
+
+mkdir -p $ISOLA_HOME
+
+if "$BASE_FLAG"; then
+  cp -a ${BASE_ISOLA_DIR}/. $ISOLA_HOME
+fi
+
+ln -sfn $ISOLA_HOME ${ISOLA_HOME}/../latest
+
+cp -a $GIT_ROOT $ISOLA_HOME
+
+(
+  export ISOLA_HOME
+  cd ${ISOLA_HOME}/${PROJECT_NAME}
+  $ISOLA_COMMANDS
+)
+
+echo -e "" >&2
+echo -e "Isola '${PROJECT_NAME}:${ISOLA_NAME}:${VERSION}' was successfully created." >&2

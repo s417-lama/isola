@@ -1,0 +1,53 @@
+#!/bin/bash
+set -euo pipefail
+export LC_ALL=C
+export LANG=C
+
+. ${ISOLA_ROOT}/bin/commands/common.bash
+
+help_and_exit() {
+  echo "Usage: isola run [OPTIONS] COMMANDS" >&2
+  exit 1
+}
+
+BASE_FLAG=false
+NOCOPY_FLAG=false
+
+while getopts :b:nh OPT; do
+  case $OPT in
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola $OPTARG) ;;
+    n) NOCOPY_FLAG=true ;;
+    h) help_and_exit ;;
+    :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
+    *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ "$#" == 0 ]]; then
+  echo -e "Error: COMMANDS is not specified.\n" >&2; help_and_exit
+fi
+
+ISOLA_COMMANDS=$@
+
+ISOLA_HOME=$(mktemp -d)
+
+trap "rm -rf $ISOLA_HOME" EXIT
+
+if "$BASE_FLAG"; then
+  cp -a ${BASE_ISOLA_DIR}/. $ISOLA_HOME
+fi
+
+if "$NOCOPY_FLAG"; then
+  PROJECT_NAME=.
+else
+  GIT_ROOT=$(git rev-parse --show-toplevel)
+  PROJECT_NAME=$(basename $GIT_ROOT)
+  cp -a $GIT_ROOT $ISOLA_HOME
+fi
+
+(
+  export ISOLA_HOME
+  cd ${ISOLA_HOME}/${PROJECT_NAME}
+  $ISOLA_COMMANDS
+)
