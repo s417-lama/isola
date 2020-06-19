@@ -46,9 +46,9 @@ fi
 if "$NOCOPY_FLAG"; then
   PROJECT_NAME=.
 else
-  GIT_ROOT=$(git rev-parse --show-toplevel)
-  PROJECT_NAME=$(basename $GIT_ROOT)
-  cp -a $GIT_ROOT $ISOLA_HOME
+  PROJECT_ROOT=$(project_root)
+  PROJECT_NAME=$(project_name)
+  cp -a $PROJECT_ROOT $ISOLA_HOME
 fi
 
 (

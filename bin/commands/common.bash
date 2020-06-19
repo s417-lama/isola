@@ -38,6 +38,15 @@ resolve_isola_simlink() {
   path2isola $path
 }
 
+project_root() {
+  # git rev-parse --show-toplevel || pwd -P
+  pwd -P
+}
+
+project_name() {
+  basename $(project_root)
+}
+
 validate_project() {
   local project=$1
   if [ ! -e ${ISOLA_ROOT}/projects/${project} ]; then

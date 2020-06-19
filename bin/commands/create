@@ -38,8 +38,8 @@ ISOLA_COMMANDS=${@:2}
 DATETIME=${DATETIME:-$(date +%Y-%m-%d_%H-%M-%S)}
 VERSION=$DATETIME
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
-PROJECT_NAME=$(basename $GIT_ROOT)
+PROJECT_ROOT=$(project_root)
+PROJECT_NAME=$(project_name)
 
 ISOLA_HOME=${ISOLA_ROOT}/projects/${PROJECT_NAME}/${ISOLA_NAME}/${VERSION}
 
@@ -51,7 +51,7 @@ fi
 
 ln -sfn $ISOLA_HOME ${ISOLA_HOME}/../latest
 
-cp -a $GIT_ROOT $ISOLA_HOME
+cp -a $PROJECT_ROOT $ISOLA_HOME
 
 (
   export ISOLA_HOME
