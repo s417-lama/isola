@@ -17,10 +17,10 @@ project_name() {
 }
 
 create_new_tmp_dir() {
-  # local path=${ISOLA_ROOT}/tmp/$(uuidgen)
-  # mkdir -p $path
-  # echo $path
-  mktemp -d
+  local path=${ISOLA_ROOT}/tmp/$(uuidgen)
+  mkdir -p $path
+  echo $path
+  # mktemp -d
 }
 
 ###############################################################################
