@@ -33,7 +33,7 @@ if [[ "$#" == 0 ]]; then
   echo -e "Error: COMMANDS is not specified.\n" >&2; help_and_exit
 fi
 
-ISOLA_COMMANDS=$@
+ISOLA_COMMANDS=("$@")
 
 ISOLA_HOME=$(create_new_tmp_dir)
 
@@ -56,5 +56,5 @@ fi
 (
   export ISOLA_HOME
   cd ${ISOLA_HOME}/${PROJECT_NAME}
-  $ISOLA_COMMANDS
+  "${ISOLA_COMMANDS[@]}"
 )

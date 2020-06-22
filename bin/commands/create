@@ -36,7 +36,7 @@ elif [[ "$#" == 1 ]]; then
 fi
 
 ISOLA_NAME=$1
-ISOLA_COMMANDS=${@:2}
+ISOLA_COMMANDS=("${@:2}")
 
 DATETIME=${DATETIME:-$(date +%Y-%m-%d_%H-%M-%S)}
 VERSION=$DATETIME
@@ -61,7 +61,7 @@ cp -a $PROJECT_ROOT $ISOLA_HOME
 (
   export ISOLA_HOME
   cd ${ISOLA_HOME}/${PROJECT_NAME}
-  $ISOLA_COMMANDS
+  "${ISOLA_COMMANDS[@]}"
 ) || (echo -e "\nIsola creation failed." >&2 && rm -rf $ISOLA_HOME && exit 1)
 
 # Make it read-only
