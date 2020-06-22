@@ -32,9 +32,14 @@ path2isola() {
   echo ${project}:${name}:${version}
 }
 
+resolve_simlink() {
+  local path=$1
+  (cd $path && pwd -P)
+}
+
 resolve_isola_simlink() {
   local isola_str=$1
-  local path=$(cd $(isola2path $isola_str) && pwd -P)
+  local path=$(resolve_simlink $(isola2path $isola_str))
   path2isola $path
 }
 
@@ -256,4 +261,14 @@ cleanup_projects() {
       rm -rf ${ISOLA_ROOT}/projects/${project}
     fi
   done
+}
+
+isola_id2path() {
+  local isola_id=$1
+  local isola_path=$(get_isola_dir_from_str $isola_id)
+  if [[ -z "$isola_path" ]]; then
+    exit 1
+  else
+    resolve_simlink $isola_path
+  fi
 }
