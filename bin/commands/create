@@ -10,15 +10,18 @@ help_and_exit() {
 
 OPTIONS:
   -b base_isola   speficy a base isola ID as 'project:name[:version]' format
+  -o              overwrite the 'latest' isola with the new one (the current 'latest' isola will be removed)
   -h              show help" >&2
   exit 1
 }
 
 BASE_FLAG=false
+OVERWRITE_FLAG=false
 
-while getopts :b:h OPT; do
+while getopts :b:oh OPT; do
   case $OPT in
     b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola_id2path $OPTARG) ;;
+    o) OVERWRITE_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
@@ -48,8 +51,8 @@ mkdir -p $ISOLA_HOME
 if "$BASE_FLAG"; then
   cp -a ${BASE_ISOLA_DIR}/. $ISOLA_HOME
 fi
-
-ln -sfn $ISOLA_HOME ${ISOLA_HOME}/../latest
+# 'cp -a' preserves the permission, so explicitly allow write to the dir
+chmod +w $ISOLA_HOME
 
 cp -a $PROJECT_ROOT $ISOLA_HOME
 
@@ -63,4 +66,12 @@ cp -a $PROJECT_ROOT $ISOLA_HOME
 chmod -w $ISOLA_HOME
 
 echo -e "" >&2
+
+if "$OVERWRITE_FLAG"; then
+  # Remove before relinking 'latest'
+  remove_isola $(isola_id2realid ${PROJECT_NAME}:${ISOLA_NAME}:latest)
+fi
+
+ln -sfn $ISOLA_HOME ${ISOLA_HOME}/../latest
+
 echo -e "Isola '${PROJECT_NAME}:${ISOLA_NAME}:${VERSION}' was successfully created." >&2

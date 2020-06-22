@@ -259,6 +259,14 @@ get_rec_isola_list() {
 # Cleanup
 ###############################################################################
 
+remove_isola() {
+  local isola_id=$1
+  local path=$(isola_id2path $isola_id)
+  echo -e "Removing ${isola_id}..." 2>&1
+  chmod +w $path
+  rm -rf $path
+}
+
 relink_latest_simlink() {
   local project=$1
   local name=$2
