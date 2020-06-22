@@ -18,7 +18,7 @@ BASE_FLAG=false
 
 while getopts :b:h OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(isola_id2path $OPTARG) ;;
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola_id2path $OPTARG) ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
@@ -58,6 +58,9 @@ cp -a $PROJECT_ROOT $ISOLA_HOME
   cd ${ISOLA_HOME}/${PROJECT_NAME}
   $ISOLA_COMMANDS
 )
+
+# Make it read-only
+chmod -w $ISOLA_HOME
 
 echo -e "" >&2
 echo -e "Isola '${PROJECT_NAME}:${ISOLA_NAME}:${VERSION}' was successfully created." >&2

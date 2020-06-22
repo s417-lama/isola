@@ -20,7 +20,7 @@ NOCOPY_FLAG=false
 
 while getopts :b:nh OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(isola_id2path $OPTARG) ;;
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola_id2path $OPTARG) ;;
     n) NOCOPY_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
@@ -42,6 +42,8 @@ trap "rm -rf $ISOLA_HOME" EXIT
 if "$BASE_FLAG"; then
   cp -a ${BASE_ISOLA_DIR}/. $ISOLA_HOME
 fi
+# 'cp -a' preserves the permission, so explicitly allow write to the dir
+chmod +w $ISOLA_HOME
 
 if "$NOCOPY_FLAG"; then
   PROJECT_NAME=.
