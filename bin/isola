@@ -13,6 +13,7 @@ COMMANDs:
   run       run commands in a temporal isola
   ls        list isolas
   rm        remove isolas
+  where     show path to an isola dir
 
 OPTIONS:
   -h        show help" >&2

@@ -3,6 +3,23 @@ set -euo pipefail
 export LC_ALL=C
 export LANG=C
 
+###############################################################################
+# Config
+###############################################################################
+
+project_root() {
+  # git rev-parse --show-toplevel || pwd -P
+  pwd -P
+}
+
+project_name() {
+  basename $(project_root)
+}
+
+###############################################################################
+# Utils
+###############################################################################
+
 is_simlink() {
   local path=$1
   test -L $path
@@ -18,12 +35,21 @@ is_broken_simlink() {
   is_simlink $path && ! is_valid_simlink $path
 }
 
-isola2path() {
-  local isola_str=$1
-  echo ${ISOLA_ROOT}/projects/${isola_str//:/\/}
+resolve_simlink() {
+  local path=$1
+  (cd $path && pwd -P)
 }
 
-path2isola() {
+###############################################################################
+# Convert Types (Unsafe)
+###############################################################################
+
+isola_id2path() {
+  local isola_id=$1
+  echo ${ISOLA_ROOT}/projects/${isola_id//:/\/}
+}
+
+isola_path2id() {
   local path=$1
   local ps=(${path//\// })
   local project=${ps[@]:(-3):1}
@@ -32,25 +58,33 @@ path2isola() {
   echo ${project}:${name}:${version}
 }
 
-resolve_simlink() {
-  local path=$1
-  (cd $path && pwd -P)
+isola_id2realid() {
+  local isola_id=$1
+  local path=$(resolve_simlink $(isola_id2path $isola_id))
+  isola_path2id $path
 }
 
-resolve_isola_simlink() {
-  local isola_str=$1
-  local path=$(resolve_simlink $(isola2path $isola_str))
-  path2isola $path
+isola_tokens2path() {
+  if [[ "$#" == 2 ]]; then
+    # project:name
+    local project=$1
+    local name=$2
+    echo ${ISOLA_ROOT}/projects/${project}/${name}/latest
+  elif [[ "$#" == 3 ]]; then
+    # project:name:version
+    local project=$1
+    local name=$2
+    local version=$3
+    echo ${ISOLA_ROOT}/projects/${project}/${name}/${version}
+  else
+    echo "Internal Error." >&2
+    exit 1
+  fi
 }
 
-project_root() {
-  # git rev-parse --show-toplevel || pwd -P
-  pwd -P
-}
-
-project_name() {
-  basename $(project_root)
-}
+###############################################################################
+# Parse Isola IDs
+###############################################################################
 
 validate_project() {
   local project=$1
@@ -82,9 +116,9 @@ validate_version() {
   fi
 }
 
-parse_isola() {
-  local isola_str=$1
-  local tokens=(${isola_str//:/ })
+parse_isola_id2tokens() {
+  local isola_id=$1
+  local tokens=(${isola_id//:/ })
   if [[ "${#tokens[@]}" == 1 ]]; then
     # project
     local project="${tokens[0]}"
@@ -104,43 +138,35 @@ parse_isola() {
     validate_version $project $name $version
     echo $project $name $version
   else
-    echo "Isola Parse Error: isola format '$isola_str' is invalid." >&2
+    echo "Isola Parse Error: isola format '$isola_id' is invalid." >&2
     echo "## Isola format must be 'project[:name[:version]]'" >&2
     exit 1
   fi
 }
 
-get_isola_dir() {
-  if [[ "$#" == 2 ]]; then
-    # project:name
-    local project=$1
-    local name=$2
-    echo ${ISOLA_ROOT}/projects/${project}/${name}/latest
-  elif [[ "$#" == 3 ]]; then
-    # project:name:version
-    local project=$1
-    local name=$2
-    local version=$3
-    echo ${ISOLA_ROOT}/projects/${project}/${name}/${version}
-  else
-    echo "Internal Error." >&2
-    exit 1
-  fi
-}
-
-get_isola_dir_from_str() {
-  set -e
-  local isola_str=$1
-  local tokens
-  tokens=($(parse_isola $isola_str))
+parse_isola_id2path() {
+  local isola_id=$1
+  local tokens=($(parse_isola_id2tokens $isola_id))
+  [[ -z "${tokens[@]}" ]] && exit 1
   if [[ "${#tokens[@]}" == 2 || "${#tokens[@]}" == 3 ]]; then
-    get_isola_dir "${tokens[@]}"
+    isola_tokens2path "${tokens[@]}"
   else
-    echo "Isola '$isola_str' must include name." >&2
+    echo "Isola '$isola_id' must include name." >&2
     echo "## Isola format must be 'project:name[:version]'" >&2
     exit 1
   fi
 }
+
+parse_isola_id2realpath() {
+  local isola_id=$1
+  local isola_path=$(parse_isola_id2path $isola_id)
+  [[ -z "$isola_path" ]] && exit 1
+  resolve_simlink $isola_path
+}
+
+###############################################################################
+# List Management
+###############################################################################
 
 get_project_list() {
   find ${ISOLA_ROOT}/projects -mindepth 1 -maxdepth 1 -printf "%f\n" | sort
@@ -164,13 +190,12 @@ get_version_list_wo_simlink() {
 }
 
 get_isola_list() {
-  set -e
   if [[ "$#" == 0 ]]; then
     get_project_list
   else
-    local isola_str=$1
-    local tokens
-    tokens=($(parse_isola $isola_str))
+    local isola_id=$1
+    local tokens=($(parse_isola_id2tokens $isola_id))
+    [[ -z "${tokens[@]}" ]] && exit 1
     if [[ "${#tokens[@]}" == 1 ]]; then
       # project
       get_name_list "${tokens[@]}"
@@ -201,13 +226,12 @@ get_rec_name_list() {
 }
 
 get_rec_isola_list() {
-  set -e
   if [[ "$#" == 0 ]]; then
     get_rec_project_list
   else
-    local isola_str=$1
-    local tokens
-    tokens=($(parse_isola $isola_str))
+    local isola_id=$1
+    local tokens=($(parse_isola_id2tokens $isola_id))
+    [[ -z "${tokens[@]}" ]] && exit 1
     if [[ "${#tokens[@]}" == 1 ]]; then
       # project
       get_rec_name_list "${tokens[@]}"
@@ -224,16 +248,20 @@ get_rec_isola_list() {
   fi
 }
 
+###############################################################################
+# Cleanup
+###############################################################################
+
 relink_latest_simlink() {
   local project=$1
   local name=$2
-  local simlink_path=$(isola2path ${project}:${name}:latest)
+  local simlink_path=$(isola_id2path ${project}:${name}:latest)
   local isolas=($(get_version_list_wo_simlink $project $name))
   if [[ "${#isolas[@]}" == 0 ]]; then
     rm -f $simlink_path
   else
     local latest_isola=${isolas[@]:(-1):1}
-    ln -sfn $(isola2path $latest_isola) $simlink_path
+    ln -sfn $(isola_id2path $latest_isola) $simlink_path
   fi
 }
 
@@ -241,7 +269,7 @@ cleanup_projects() {
   for project in $(get_project_list); do
     for name in $(get_name_list $project | cut -d ':' -f 2); do
       for version in $(get_version_list $project $name | cut -d ':' -f 3); do
-        local path=$(isola2path ${project}:${name}:${version})
+        local path=$(isola_id2path ${project}:${name}:${version})
         # if symlink 'latest' is broken, try to fix it. Otherwise just remove it.
         if is_broken_simlink $path; then
           if [[ "${version}" == latest ]]; then
@@ -261,14 +289,4 @@ cleanup_projects() {
       rm -rf ${ISOLA_ROOT}/projects/${project}
     fi
   done
-}
-
-isola_id2path() {
-  local isola_id=$1
-  local isola_path=$(get_isola_dir_from_str $isola_id)
-  if [[ -z "$isola_path" ]]; then
-    exit 1
-  else
-    resolve_simlink $isola_path
-  fi
 }

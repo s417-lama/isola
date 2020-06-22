@@ -9,7 +9,7 @@ help_and_exit() {
   echo "Usage: isola run [OPTIONS] COMMANDS
 
 OPTIONS:
-  -b base_isola   speficy a base isola as 'project:name[:version]' format
+  -b base_isola   speficy a base isola ID as 'project:name[:version]' format
   -n              do not copy the current project to the isola
   -h              show help" >&2
   exit 1
@@ -20,7 +20,7 @@ NOCOPY_FLAG=false
 
 while getopts :b:nh OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(get_isola_dir_from_str $OPTARG) ;;
+    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(isola_id2path $OPTARG) ;;
     n) NOCOPY_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;

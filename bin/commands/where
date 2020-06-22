@@ -28,4 +28,4 @@ fi
 
 ISOLA_ID=$1
 
-isola_id2path $ISOLA_ID
+parse_isola_id2realpath $ISOLA_ID
