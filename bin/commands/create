@@ -46,6 +46,8 @@ PROJECT_NAME=$(project_name)
 
 ISOLA_HOME=${ISOLA_ROOT}/projects/${PROJECT_NAME}/${ISOLA_NAME}/${VERSION}
 
+trap cleanup_projects EXIT
+
 mkdir -p $ISOLA_HOME
 
 if "$BASE_FLAG"; then
@@ -60,14 +62,14 @@ cp -a $PROJECT_ROOT $ISOLA_HOME
   export ISOLA_HOME
   cd ${ISOLA_HOME}/${PROJECT_NAME}
   $ISOLA_COMMANDS
-)
+) || (echo -e "\nIsola creation failed." >&2 && rm -rf $ISOLA_HOME && exit 1)
 
 # Make it read-only
 chmod -w $ISOLA_HOME
 
 echo -e "" >&2
 
-if "$OVERWRITE_FLAG"; then
+if "$OVERWRITE_FLAG" && is_valid_simlink ${ISOLA_HOME}/../latest; then
   # Remove before relinking 'latest'
   remove_isola $(isola_id2realid ${PROJECT_NAME}:${ISOLA_NAME}:latest)
 fi

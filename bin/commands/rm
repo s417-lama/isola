@@ -40,6 +40,8 @@ if [[ "$#" == 0 ]]; then
   echo -e "Please specify isolas to be removed.\n" >&2; help_and_exit
 fi
 
+trap cleanup_projects EXIT
+
 REMOVE_LIST=()
 for isola in "$@"; do
   REMOVE_LIST+=($(get_rec_isola_list $isola))
@@ -65,8 +67,6 @@ fi
 for isola in "${REMOVE_LIST[@]}"; do
   remove_isola $isola
 done
-
-cleanup_projects
 
 echo -e "" >&2
 echo -e "done." >&2
