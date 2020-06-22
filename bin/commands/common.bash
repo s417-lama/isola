@@ -16,6 +16,13 @@ project_name() {
   basename $(project_root)
 }
 
+create_new_tmp_dir() {
+  # local path=${ISOLA_ROOT}/tmp/$(uuidgen)
+  # mkdir -p $path
+  # echo $path
+  mktemp -d
+}
+
 ###############################################################################
 # Utils
 ###############################################################################

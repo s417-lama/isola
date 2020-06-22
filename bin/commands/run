@@ -35,7 +35,7 @@ fi
 
 ISOLA_COMMANDS=$@
 
-ISOLA_HOME=$(mktemp -d)
+ISOLA_HOME=$(create_new_tmp_dir)
 
 trap "rm -rf $ISOLA_HOME" EXIT
 
