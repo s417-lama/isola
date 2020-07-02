@@ -11,17 +11,20 @@ help_and_exit() {
 OPTIONS:
   -b base_isola   speficy a base isola ID as 'project:name[:version]' format
   -o              overwrite the 'latest' isola with the new one (the current 'latest' isola will be removed)
+  -r              make the isola readonly after creation
   -h              show help" >&2
   exit 1
 }
 
 BASE_FLAG=false
 OVERWRITE_FLAG=false
+READONLY_FLAG=false
 
-while getopts :b:oh OPT; do
+while getopts :b:orh OPT; do
   case $OPT in
     b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola_id2path $OPTARG) ;;
     o) OVERWRITE_FLAG=true ;;
+    r) READONLY_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
@@ -64,8 +67,10 @@ cp -a $PROJECT_ROOT $ISOLA_HOME
   "${ISOLA_COMMANDS[@]}"
 ) || (echo -e "\nIsola creation failed." >&2 && rm -rf $ISOLA_HOME && exit 1)
 
-# Make it read-only
-chmod -w $ISOLA_HOME
+if "$READONLY_FLAG"; then
+  # Make it read-only
+  chmod -w $ISOLA_HOME
+fi
 
 echo -e "" >&2
 
