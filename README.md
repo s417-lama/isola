@@ -27,6 +27,10 @@ ISOLA_ROOT=/path/to/install ./install.bash
 
 To uninstall, just remove the `.isola` dir (e.g., `rm -rf ~/.isola`).
 
+## Tutorial
+
+- [A Tutorial on Managing Multiple Builds of OpenBLAS](/tutorial/openblas/README.md)
+
 ## Features
 
 ### Managing Multiple Versions of a Project in Isolated Directories
