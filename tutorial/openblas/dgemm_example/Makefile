@@ -1,4 +1,3 @@
-# VHOME     := $(or ${ISOLA_HOME},${HOME})
 VHOME     := $(or $(ISOLA_HOME),$(HOME))
 BLAS_PATH := $(VHOME)/opt/openblas
 

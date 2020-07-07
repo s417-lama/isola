@@ -19,6 +19,11 @@ To summarize the benefits of Isola, it
 
 will install Isola at `~/.isola`.
 
+Path setting (e.g., in `.bashrc`):
+```sh
+export PATH=~/.isola/bin:$PATH
+```
+
 To change the install path, run:
 
 ```sh
