@@ -20,7 +20,7 @@ BASE_ISOLA_DIRS=()
 
 while getopts :b:nh OPT; do
   case $OPT in
-    b) BASE_ISOLA_DIRS=("${BASE_ISOLA_DIRS[@]}" $(parse_isola_id2path $OPTARG)) ;;
+    b) BASE_ISOLA_DIRS=(${BASE_ISOLA_DIRS[@]+"${BASE_ISOLA_DIRS[@]}"} $(parse_isola_id2path $OPTARG)) ;;
     n) NOCOPY_FLAG=true ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
