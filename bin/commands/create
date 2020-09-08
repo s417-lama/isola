@@ -16,13 +16,13 @@ OPTIONS:
   exit 1
 }
 
-BASE_FLAG=false
 OVERWRITE_FLAG=false
 READONLY_FLAG=false
+BASE_ISOLA_DIRS=()
 
 while getopts :b:orh OPT; do
   case $OPT in
-    b) BASE_FLAG=true; BASE_ISOLA_DIR=$(parse_isola_id2path $OPTARG) ;;
+    b) BASE_ISOLA_DIRS=("${BASE_ISOLA_DIRS[@]}" $(parse_isola_id2path $OPTARG)) ;;
     o) OVERWRITE_FLAG=true ;;
     r) READONLY_FLAG=true ;;
     h) help_and_exit ;;
@@ -53,11 +53,11 @@ trap cleanup_projects EXIT
 
 mkdir -p $ISOLA_HOME
 
-if "$BASE_FLAG"; then
-  cp -a ${BASE_ISOLA_DIR}/. $ISOLA_HOME
-fi
-# 'cp -a' preserves the permission, so explicitly allow write to the dir
-chmod +w $ISOLA_HOME
+for base_dir in ${BASE_ISOLA_DIRS[@]}; do
+  cp -a ${base_dir}/. $ISOLA_HOME
+  # 'cp -a' preserves the permission, so explicitly allow write to the dir
+  chmod +w $ISOLA_HOME
+done
 
 cp -a $PROJECT_ROOT $ISOLA_HOME
 
