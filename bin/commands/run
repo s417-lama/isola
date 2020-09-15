@@ -39,7 +39,7 @@ ISOLA_HOME=$(create_new_tmp_dir)
 
 trap "rm -rf $ISOLA_HOME" EXIT
 
-for base_dir in ${BASE_ISOLA_DIRS[@]}; do
+for base_dir in ${BASE_ISOLA_DIRS[@]+"${BASE_ISOLA_DIRS[@]}"}; do
   cp -a ${base_dir}/. $ISOLA_HOME
   # 'cp -a' preserves the permission, so explicitly allow write to the dir
   chmod +w $ISOLA_HOME
