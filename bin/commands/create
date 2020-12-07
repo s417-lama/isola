@@ -61,10 +61,14 @@ done
 
 cp -a $PROJECT_ROOT $ISOLA_HOME
 
+LOG_DIR=${ISOLA_HOME}/.isola
+LOG_FILE=${LOG_DIR}/${PROJECT_NAME}:${ISOLA_NAME}:${VERSION}.log
+mkdir -p $LOG_DIR
+
 (
   export ISOLA_HOME
   cd ${ISOLA_HOME}/${PROJECT_NAME}
-  "${ISOLA_COMMANDS[@]}"
+  "${ISOLA_COMMANDS[@]}" 2>&1 | tee $LOG_FILE
 ) || (echo -e "\nIsola creation failed." >&2 && rm -rf $ISOLA_HOME && exit 1)
 
 if "$READONLY_FLAG"; then
