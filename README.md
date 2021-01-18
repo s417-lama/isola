@@ -272,6 +272,17 @@ OPTIONS:
   -h    show help
 ```
 
+### `isola cleanup`
+
+Tries to fix inconsistent state (e.g., the `latest` tag does not point to the latest isola).
+
+```
+Usage: isola cleanup [OPTIONS]
+
+OPTIONS:
+  -h    show help
+```
+
 ## Known Problems
 
 - When an isola (isola1) depends on another isola (isola2), removing isola2 is not recommended because some executables in isola1 may be linked to some libraries in isola1 by using absolute paths. This is a fundamental problem of Isola as it does not use `chroot` command to virtualize the HOME directory. This is not a problem as long as we do not remove isolas depended on by others.

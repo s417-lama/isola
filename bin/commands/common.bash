@@ -273,34 +273,32 @@ relink_latest_simlink() {
   local simlink_path=$(isola_id2path ${project}:${name}:latest)
   local isolas=($(get_version_list_wo_simlink $project $name))
   if [[ "${#isolas[@]}" == 0 ]]; then
+    # if no available isola is found, just remove this group
     rm -f $simlink_path
   else
     local latest_isola=${isolas[@]:(-1):1}
-    ln -sfn $(isola_id2path $latest_isola) $simlink_path
+    local latest_isola_path=$(isola_id2path $latest_isola)
+    if is_valid_simlink $simlink_path && [[ $latest_isola_path != $(resolve_simlink $simlink_path) ]]; then
+      echo "Relinking ${project}:${name}:latest to $latest_isola..." >&2
+    fi
+    ln -sfn $latest_isola_path $simlink_path
   fi
 }
 
 cleanup_projects() {
   for project in $(get_project_list); do
     for name in $(get_name_list $project | cut -d ':' -f 2); do
-      for version in $(get_version_list $project $name | cut -d ':' -f 3); do
-        local path=$(isola_id2path ${project}:${name}:${version})
-        # if symlink 'latest' is broken, try to fix it. Otherwise just remove it.
-        if is_broken_simlink $path; then
-          if [[ "${version}" == latest ]]; then
-            relink_latest_simlink $project $name
-          else
-            rm -f $path
-          fi
-        fi
-      done
+      # handle incorrect 'latest' tag
+      relink_latest_simlink $project $name
       # if 'name' is empty, remove it
       if [[ -z "$(get_version_list $project $name)" ]]; then
+        echo "Removing ${project}:${name}..." >&2
         rm -rf ${ISOLA_ROOT}/projects/${project}/${name}
       fi
     done
     # if 'project' is empty, remove it
     if [[ -z "$(get_name_list $project)" ]]; then
+      echo "Removing ${project}..." >&2
       rm -rf ${ISOLA_ROOT}/projects/${project}
     fi
   done
