@@ -12,6 +12,7 @@ OPTIONS:
   -b base_isola   speficy a base isola ID as 'project:name[:version]' format
   -o              overwrite the 'latest' isola with the new one (the current 'latest' isola will be removed)
   -r              make the isola readonly after creation
+  -p              project name (default: current dir name)
   -h              show help" >&2
   exit 1
 }
@@ -19,12 +20,14 @@ OPTIONS:
 OVERWRITE_FLAG=false
 READONLY_FLAG=false
 BASE_ISOLA_DIRS=()
+PROJECT_NAME=$(project_name)
 
-while getopts :b:orh OPT; do
+while getopts :b:orp:h OPT; do
   case $OPT in
     b) BASE_ISOLA_DIRS=(${BASE_ISOLA_DIRS[@]+"${BASE_ISOLA_DIRS[@]}"} $(parse_isola_id2path $OPTARG)) ;;
     o) OVERWRITE_FLAG=true ;;
     r) READONLY_FLAG=true ;;
+    p) PROJECT_NAME=$OPTARG ;;
     h) help_and_exit ;;
     :) echo -e "Parsing Error: -$OPTARG\n" >&2; help_and_exit ;;
     *) echo -e "Unknown option: -$OPTARG\n" >&2; help_and_exit ;;
@@ -45,13 +48,12 @@ DATETIME=${DATETIME:-$(date +%Y-%m-%d_%H-%M-%S)}
 VERSION=$DATETIME
 
 PROJECT_ROOT=$(project_root)
-PROJECT_NAME=$(project_name)
 
 ISOLA_HOME=${ISOLA_ROOT}/projects/${PROJECT_NAME}/${ISOLA_NAME}/${VERSION}
 
 trap cleanup_projects EXIT
 
-mkdir -p $ISOLA_HOME
+mkdir -p $ISOLA_HOME/$PROJECT_NAME
 
 for base_dir in ${BASE_ISOLA_DIRS[@]+"${BASE_ISOLA_DIRS[@]}"}; do
   cp -a ${base_dir}/. $ISOLA_HOME
@@ -59,7 +61,7 @@ for base_dir in ${BASE_ISOLA_DIRS[@]+"${BASE_ISOLA_DIRS[@]}"}; do
   chmod +w $ISOLA_HOME
 done
 
-cp -a $PROJECT_ROOT $ISOLA_HOME
+cp -a $PROJECT_ROOT/. $ISOLA_HOME/$PROJECT_NAME
 
 LOG_DIR=${ISOLA_HOME}/.isola
 LOG_FILE=${LOG_DIR}/${PROJECT_NAME}:${ISOLA_NAME}:${VERSION}.log
